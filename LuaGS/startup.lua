@@ -18,6 +18,7 @@ LuaGL.glFrontFace(LuaGL.GL_CCW)
 time = os.time()
 val = 0.5
 while true do
+	LuaGL.test("ok")
 	if os.time() - time < 1 then
 		clear(0.0, 0.0, 0.0, 1.0)
 		LuaGL.glBegin(LuaGL.GL_TRIANGLES)

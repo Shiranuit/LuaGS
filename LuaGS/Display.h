@@ -1,5 +1,4 @@
-#ifndef DISPLAY_H
-#define DISPLAY_H
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -26,5 +25,3 @@ class Display
         SDL_GLContext m_glContext;
         bool m_isClosed;
 };
-
-#endif // DISPLAY_H

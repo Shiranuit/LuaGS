@@ -7,7 +7,6 @@ void Sync()
 	display->sync();
 }
 
-
 void LuaGL::loadGLMethods(lua_State *L)
 {
 	for (const rttr::method &method : rttr::type::get_global_methods()) {
@@ -18,12 +17,20 @@ void LuaGL::loadGLMethods(lua_State *L)
 void LuaGL::LoadLuaGL(lua_State *L)
 {
 	lua_newtable(L);
-	lua_pushvalue(L, -1);
-	lua_setglobal(L, "LuaGL");
-	lua_pushvalue(L, -1);
+	if (lua_istable(L, -1)) {
+		lua_pushvalue(L, -1);
+		lua_setglobal(L, "LuaGL");
+		lua_pushvalue(L, -1);
 
-	loadGLConsts(L);
-	loadGLMethods(L);
+		loadGLConsts(L);
+		loadGLMethods(L);
+		
+	}
+	
+	/*lua_getglobal(L, "os");
+	if (lua_istable(L, -1)) {
+		lua_pushvalue(L, -1);
+	}*/
 }
 RTTR_REGISTRATION
 {

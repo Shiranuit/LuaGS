@@ -1,17 +1,46 @@
 #include "LuaBinding.h"
 
+char *strcopy(const char *str)
+{
+	int len = 0;
+	while (str[len++]);
+
+	char *nstr = (char *)malloc(sizeof(char) * (len));
+
+	for (int i = 0; i < len - 1; i++)
+		nstr[i] = str[i];
+	nstr[len - 1] = '\0';
+
+	return nstr;
+}
+
+const char *cstrcopy(const char *str)
+{
+	int len = 0;
+	while (str[len++]);
+
+	char *nstr = (char *)malloc(sizeof(char) * (len));
+
+	for (int i = 0; i < len - 1; i++)
+		nstr[i] = str[i];
+	nstr[len - 1] = '\0';
+
+	return nstr;
+}
+
 int GlobalCallLua(lua_State *L)
 {
 	rttr::method *m = (rttr::method *)lua_touserdata(L, lua_upvalueindex(1)); // Retrieve UserData
 	rttr::method method(*m); // Avoid Lua Garbage Collector
 	rttr::array_range<rttr::parameter_info> methodParams = method.get_parameter_infos();
 	int luaArgCount = lua_gettop(L);
+	int paramCount = methodParams.size();
 
-	if (methodParams.size() > luaArgCount) {
+	if (paramCount > luaArgCount) {
 		luaL_error(L, "Expected %d arguments, got %d\n", methodParams.size(), luaArgCount);
 		return 0;
 	}
-	if (methodParams.size() == 0)
+	if (paramCount == 0)
 	{
 		rttr::variant result = method.invoke({});
 		if (!result.is_valid()) {
@@ -22,7 +51,10 @@ int GlobalCallLua(lua_State *L)
 	}
 
 	std::vector<rttr::argument> methodArgs(methodParams.size());
+	std::string **LuaString = (std::string **)malloc(sizeof(std::string *) * methodParams.size());
 	LuaValue *values = (LuaValue *)malloc(sizeof(LuaValue) * methodParams.size());
+	for (int i = 0; i < paramCount; i++)
+		LuaString[i] = NULL;
 
 
 	auto paramIterator = methodParams.begin();
@@ -71,18 +103,18 @@ int GlobalCallLua(lua_State *L)
 				return 0;
 			}
 			break;
-		//case LUA_TSTRING:
-		//	if (param == rttr::type::get<char *>()) {
-		//		values[i].strVal = std::string(lua_tostring(L, i));
-		//		methodArgs[i] = values[i].strVal.c_str();
-		//	} else if (param == rttr::type::get<std::string>()) {
-		//		values[i].strVal = std::string(lua_tostring(L, i));
-		//		methodArgs[i] = values[i].strVal;
-		//	} else {
-		//		luaL_error(L, "Argument #%d Unknown conversion LuaString to %s\n", i, param.get_name().to_string().c_str());
-		//		return 0;
-		//	}
-		//	break;
+		case LUA_TSTRING:
+			if (param == rttr::type::get<char *>()) {
+				methodArgs[i] = strcopy(lua_tostring(L, id));
+			} else if (param == rttr::type::get<const char *>()) {
+				methodArgs[i] = cstrcopy(lua_tostring(L, id));
+			} else if (param == rttr::type::get<std::string>()) {
+				methodArgs[i] = new std::string(lua_tostring(L, id));
+			} else {
+				luaL_error(L, "Argument #%d Unknown conversion LuaString to %s\n", i, param.get_name().to_string().c_str());
+				return 0;
+			}
+			break;
 		case LUA_TBOOLEAN:
 			if (param == rttr::type::get<bool>()) {
 				values[i].boolVal = lua_toboolean(L, id);
@@ -112,7 +144,12 @@ int GlobalCallLua(lua_State *L)
 		}
 	}
 
+
 	rttr::variant result = method.invoke_variadic({}, methodArgs);
+	free(values);
+	for (int i = 0; i < paramCount; i++)
+		delete LuaString[i];
+	delete LuaString;
 	if (!result.is_valid()) {
 		luaL_error(L, "Something went wrong\n");
 		return 0;
