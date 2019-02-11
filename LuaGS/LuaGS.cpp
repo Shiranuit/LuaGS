@@ -1,12 +1,9 @@
 #include <iostream>
-#include "Display.h"
+#include "Engine.h"
 
 int main(int ac, char **av)
 {
-	Display disp(800, 600, "LuaGL");
-
-	while (!disp.isClosed()) {
-		disp.event();
-	}
+	Engine engine(800, 600, "LuaGS");
+	engine.run(ac, av);
 	return 0;
 }
