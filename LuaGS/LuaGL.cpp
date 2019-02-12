@@ -2,9 +2,14 @@
 
 Display *display;
 
-void Sync()
+void sync()
 {
 	display->sync();
+}
+
+void pullEvent()
+{
+	display->event();
 }
 
 void LuaGL::loadGLMethods(lua_State *L)
@@ -24,17 +29,12 @@ void LuaGL::LoadLuaGL(lua_State *L)
 
 		loadGLConsts(L);
 		loadGLMethods(L);
-		
 	}
-	
-	/*lua_getglobal(L, "os");
-	if (lua_istable(L, -1)) {
-		lua_pushvalue(L, -1);
-	}*/
 }
 RTTR_REGISTRATION
 {
-	loadMethod(Sync)
+	loadMethod(sync)
+	loadMethod(pullEvent)
 	loadMethod(glAccum)
 	loadMethod(glAlphaFunc)
 	loadMethod(glArrayElement)
