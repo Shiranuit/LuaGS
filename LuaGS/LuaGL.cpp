@@ -8,6 +8,11 @@ void glSync()
 	display->sync();
 }
 
+void pullEvent()
+{
+	display->event();
+}
+
 void glDrawString(int x, int y, char *str, float size)
 {
 	fontRenderer->drawString(x, y, str, size);
@@ -33,6 +38,8 @@ void LuaGL::LoadLuaGL(lua_State *L)
 				printf("Not a TABLE !");
 			}
 		}
+		loadGLConsts(L);
+		loadGLMethods(L);
 	}
 }
 

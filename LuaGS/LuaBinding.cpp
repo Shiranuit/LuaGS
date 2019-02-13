@@ -54,112 +54,34 @@ int GlobalCallLua(lua_State *L)
 		return 0;
 	}
 
-	std::vector<rttr::argument> methodArgs(methodParams.size());
-	std::string **LuaString = (std::string **)malloc(sizeof(std::string *) * methodParams.size());
-	LuaValue *values = (LuaValue *)malloc(sizeof(LuaValue) * methodParams.size());
+	std::vector<rttr::argument> methodArgs(paramCount);
+	std::vector<void *> LuaValue(paramCount);
 	for (int i = 0; i < paramCount; i++)
-		LuaString[i] = NULL;
-
+		LuaValue[i] = NULL;
 
 	auto paramIterator = methodParams.begin();
 
 	for (int i = 0; i < luaArgCount; i++) {
 		int id = i + 1;
 		const rttr::type param = paramIterator->get_type();
-		int luaType = lua_type(L, id);
-	
-		switch (luaType)
-		{
-
-		case LUA_TNUMBER:
-			if (param == rttr::type::get<unsigned long>()) {
-				values[i].ulongVal = (unsigned long)lua_tonumber(L, id);
-				methodArgs[i] = values[i].ulongVal;
-			} else if (param == rttr::type::get<unsigned int>()) {
-				values[i].uintVal = (unsigned int)lua_tonumber(L, id);
-				methodArgs[i] = values[i].uintVal;
-			} else if (param == rttr::type::get<unsigned short>()) {
-				values[i].ushortVal = (unsigned char)lua_tonumber(L, id);
-				methodArgs[i] = values[i].ushortVal;
-			} else if (param == rttr::type::get<unsigned char>()) {
-				values[i].ucharVal = (unsigned char)lua_tonumber(L, id);
-				methodArgs[i] = values[i].ucharVal;
-			} else if (param == rttr::type::get<long>()) {
-				values[i].longVal = (long)lua_tonumber(L, id);
-				methodArgs[i] = values[i].longVal;
-			} else if (param == rttr::type::get<int>()) {
-				values[i].intVal = (int)lua_tonumber(L, id);
-				methodArgs[i] = values[i].intVal;
-			} else if (param == rttr::type::get<short>()) {
-				values[i].shortVal = (short)lua_tonumber(L, id);
-				methodArgs[i] = values[i].shortVal;
-			} else if (param == rttr::type::get<char>()) {
-				values[i].byteVal = (char)lua_tonumber(L, id);
-				methodArgs[i] = values[i].byteVal;
-			} else if (param == rttr::type::get<float>()) {
-				values[i].floatVal = (float)lua_tonumber(L, id);
-				methodArgs[i] = values[i].floatVal;
-			} else if (param == rttr::type::get<double>()) {
-				values[i].doubleVal = (double)lua_tonumber(L, id);
-				methodArgs[i] = values[i].doubleVal;
-			} else {
-				luaL_error(L, "Argument #%d Unknown conversion LuaNumber to %s\n", id, param.get_name().to_string().c_str());
-				return 0;
-			}
-			break;
-		case LUA_TSTRING:
-			if (param == rttr::type::get<char *>()) {
-				methodArgs[i] = strcopy(lua_tostring(L, id));
-			} else if (param == rttr::type::get<const char *>()) {
-				methodArgs[i] = cstrcopy(lua_tostring(L, id));
-			} else if (param == rttr::type::get<std::string>()) {
-				methodArgs[i] = new std::string(lua_tostring(L, id));
-			} else {
-				luaL_error(L, "Argument #%d Unknown conversion LuaString to %s\n", i, param.get_name().to_string().c_str());
-				return 0;
-			}
-			break;
-		case LUA_TBOOLEAN:
-			if (param == rttr::type::get<bool>()) {
-				values[i].boolVal = lua_toboolean(L, id);
-				methodArgs[i] = values[i].boolVal;
-			} else {
-				luaL_error(L, "Argument #%d Unknown conversion LuaBoolean to %s\n", id, param.get_name().to_string().c_str());
-				return 0;
-			}
-		case LUA_TTABLE:
-			luaL_error(L, "Argument #%d Unknown conversion LuaTable to %s\n", id, param.get_name().to_string().c_str());
+		if (LuaBinding::luaValueToC(L, id, param, methodArgs, LuaValue) < 1)
 			return 0;
-		case LUA_TTHREAD:
-			luaL_error(L, "Argument #%d Unknown conversion LuaThread to %s\n", id, param.get_name().to_string().c_str());
-			return 0;
-		case LUA_TFUNCTION:
-			luaL_error(L, "Argument #%d Unknown conversion LuaFunction to %s\n", id, param.get_name().to_string().c_str());
-			return 0;
-		case LUA_TNIL:
-			luaL_error(L, "Argument #%d Unknown conversion LuaNil to %s\n", id, param.get_name().to_string().c_str());
-			return 0;
-		case LUA_TNONE:
-			luaL_error(L, "Argument #%d Unknown conversion LuaNone to %s\n", id, param.get_name().to_string().c_str());
-			return 0;
-		default:
-			luaL_error(L, "Unknown type conversion\n");
-			return 0;
-		}
 	}
 
-
 	rttr::variant result = method.invoke_variadic({}, methodArgs);
-	free(values);
-	for (int i = 0; i < paramCount; i++)
-		delete LuaString[i];
-	delete LuaString;
+
+
+
 	if (!result.is_valid()) {
 		luaL_error(L, "Something went wrong\n");
 		return 0;
 	}
-	return 0;
+	int valuePushed = LuaBinding::CToluaValue(L, result);
+	
+	for (int i = 0; i < paramCount; i++)
+		delete LuaValue[i];
 
+	return valuePushed;
 }
 
 void LuaBinding::registerMethod(lua_State *L, const rttr::method &method)
@@ -175,4 +97,169 @@ void LuaBinding::registerTableMethod(lua_State *L, const rttr::method &method)
 	lua_pushlightuserdata(L, (void *)&method);
 	lua_pushcclosure(L, GlobalCallLua, 1);
 	lua_settable(L, -3);
+}
+
+int LuaBinding::CToluaValue(lua_State *L, rttr::variant &value)
+{
+	if (value.get_type() == rttr::type::get<long>())
+		lua_pushnumber(L, value.get_value<long>());
+	else if (value.get_type() == rttr::type::get<int>())
+		lua_pushnumber(L, value.get_value<int>());
+	else if (value.get_type() == rttr::type::get<short>())
+		lua_pushnumber(L, value.get_value<short>());
+	else if (value.get_type() == rttr::type::get<char>())
+		lua_pushnumber(L, value.get_value<char>());
+	else if (value.get_type() == rttr::type::get<float>())
+		lua_pushnumber(L, value.get_value<float>());
+	else if (value.get_type() == rttr::type::get<double>())
+		lua_pushnumber(L, value.get_value<double>());
+	else if (value.get_type() == rttr::type::get<unsigned long>())
+		lua_pushnumber(L, value.get_value<unsigned long>());
+	else if (value.get_type() == rttr::type::get<unsigned int>())
+		lua_pushnumber(L, value.get_value<unsigned int>());
+	else if (value.get_type() == rttr::type::get<unsigned short>())
+		lua_pushnumber(L, value.get_value<unsigned short>());
+	else if (value.get_type() == rttr::type::get<unsigned char>())
+		lua_pushnumber(L, value.get_value<unsigned char>());
+	else if (value.get_type() == rttr::type::get<bool>())
+		lua_pushboolean(L, value.get_value<bool>());
+	else if (value.get_type() == rttr::type::get<const char *>())
+		lua_pushstring(L, value.get_value<const char *>());
+	else if (value.get_type() == rttr::type::get<char *>())
+		lua_pushstring(L, strcopy(value.get_value<char *>()));
+	else if (value.get_type() == rttr::type::get<std::string>())
+		lua_pushstring(L, strcopy(value.get_value<std::string>().c_str()));
+	else if (value.get_type() == rttr::type::get<std::string *>())
+		lua_pushstring(L, strcopy(((std::string *)value.get_value<std::string *>())->c_str()));
+	else {
+		return 0;
+	}
+	return 1;
+}
+
+int LuaBinding::luaValueToC(lua_State *L, int id, const rttr::type &param, std::vector<rttr::argument> &args, std::vector<void *> &LuaValue)
+{
+	int luaType = lua_type(L, id);
+	int i = id - 1;
+
+	switch (luaType)
+	{
+
+	case LUA_TNUMBER:
+		if (param == rttr::type::get<unsigned long>()) {
+			unsigned long *value = (unsigned long *)malloc(sizeof(unsigned long));
+			*value = (unsigned long)lua_tonumber(L, id);
+			LuaValue[i] = value;
+			args[i] = (unsigned long)*value;
+		}
+		else if (param == rttr::type::get<unsigned int>()) {
+			unsigned int *value = (unsigned int *)malloc(sizeof(unsigned int));
+			*value = (unsigned int)lua_tonumber(L, id);
+			LuaValue[i] = value;
+			args[i] = (unsigned int)*value;
+		}
+		else if (param == rttr::type::get<unsigned short>()) {
+			unsigned short *value = (unsigned short *)malloc(sizeof(unsigned short));
+			*value = (unsigned short)lua_tonumber(L, id);
+			LuaValue[i] = value;
+			args[i] = (unsigned short)*value;
+		}
+		else if (param == rttr::type::get<unsigned char>()) {
+			unsigned char *value = (unsigned char *)malloc(sizeof(unsigned char));
+			*value = (unsigned char)lua_tonumber(L, id);
+			LuaValue[i] = value;
+			args[i] = (unsigned char)*value;
+		}
+		else if (param == rttr::type::get<long>()) {
+			long *value = (long *)malloc(sizeof(long));
+			*value = (long)lua_tonumber(L, id);
+			LuaValue[i] = value;
+			args[i] = (long)*value;
+		}
+		else if (param == rttr::type::get<int>()) {
+			int *value = (int *)malloc(sizeof(int));
+			*value = (int)lua_tonumber(L, id);
+			LuaValue[i] = value;
+			args[i] = (int)*value;
+		}
+		else if (param == rttr::type::get<short>()) {
+			short *value = (short *)malloc(sizeof(short));
+			*value = (short)lua_tonumber(L, id);
+			LuaValue[i] = value;
+			args[i] = (short)*value;
+		}
+		else if (param == rttr::type::get<char>()) {
+			char *value = (char *)malloc(sizeof(char));
+			*value = (char)lua_tonumber(L, id);
+			LuaValue[i] = value;
+			args[i] = (char)*value;
+		}
+		else if (param == rttr::type::get<float>()) {
+			float *value = (float *)malloc(sizeof(float));
+			*value = (float)lua_tonumber(L, id);
+			LuaValue[i] = value;
+			args[i] = (float)*value;
+		}
+		else if (param == rttr::type::get<double>()) {
+			double *value = (double *)malloc(sizeof(double));
+			*value = (double)lua_tonumber(L, id);
+			LuaValue[i] = value;
+			args[i] = (double)*value;
+		}
+		else {
+			luaL_error(L, "Argument #%d Unknown conversion LuaNumber to %s\n", id, param.get_name().to_string().c_str());
+			return 0;
+		}
+		return 1;
+	case LUA_TSTRING:
+		if (param == rttr::type::get<char *>()) {
+			char *value = strcopy(lua_tostring(L, id));
+			LuaValue[i] = value;
+			args[i] = (char *)value;
+		}
+		else if (param == rttr::type::get<const char *>()) {
+			const char *value = cstrcopy(lua_tostring(L, id));
+			LuaValue[i] = 0;
+			args[i] = value;
+		}
+		else if (param == rttr::type::get<std::string>()) {
+			std::string *value = new std::string(lua_tostring(L, id));
+			LuaValue[i] = value;
+			args[i] = (std::string)*value;
+		}
+		else {
+			luaL_error(L, "Argument #%d Unknown conversion LuaString to %s\n", id, param.get_name().to_string().c_str());
+			return 0;
+		}
+		return 1;
+	case LUA_TBOOLEAN:
+		if (param == rttr::type::get<bool>()) {
+			bool *value = (bool *)malloc(sizeof(bool));
+			*value = (bool)lua_toboolean(L, id);
+			LuaValue[i] = value;
+			args[i] = (bool)*value;
+		}
+		else {
+			luaL_error(L, "Argument #%d Unknown conversion LuaBoolean to %s\n", id, param.get_name().to_string().c_str());
+			return 0;
+		}
+	case LUA_TTABLE:
+		luaL_error(L, "Argument #%d Unknown conversion LuaTable to %s\n", id, param.get_name().to_string().c_str());
+		return 0;
+	case LUA_TTHREAD:
+		luaL_error(L, "Argument #%d Unknown conversion LuaThread to %s\n", id, param.get_name().to_string().c_str());
+		return 0;
+	case LUA_TFUNCTION:
+		luaL_error(L, "Argument #%d Unknown conversion LuaFunction to %s\n", id, param.get_name().to_string().c_str());
+		return 0;
+	case LUA_TNIL:
+		luaL_error(L, "Argument #%d Unknown conversion LuaNil to %s\n", id, param.get_name().to_string().c_str());
+		return 0;
+	case LUA_TNONE:
+		luaL_error(L, "Argument #%d Unknown conversion LuaNone to %s\n", id, param.get_name().to_string().c_str());
+		return 0;
+	default:
+		luaL_error(L, "Unknown type conversion\n");
+		return 0;
+	}
 }
