@@ -5,17 +5,20 @@
 Engine::Engine(unsigned int _width, unsigned int _height, const std::string &title) : width(_width), height(_height)
 {
 	display = new Display(_width, _height, title);
+	fontRenderer = new FontRenderer("assets/term_font.png", _width, _height);
 }
 
 
 Engine::~Engine()
 {
 	delete display;
+	delete fontRenderer;
 }
 
 void Engine::init(int ac, char **av)
 {
 	display->clear(0.f, 0.f, 0.f, 1.f);
+	display->sync();
 
 	LuaGL::LoadLuaGL(lua.getState());	
 

@@ -1,8 +1,10 @@
 #pragma once
 #include "Display.h"
 #include "LuaContext.h"
+#include "FontRenderer.h"
 
 extern Display *display;
+extern FontRenderer *fontRenderer;
 
 class Engine
 {

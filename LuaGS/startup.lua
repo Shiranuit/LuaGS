@@ -14,13 +14,13 @@ LuaGL.glCullFace(LuaGL.GL_BACK)
 LuaGL.glFrontFace(LuaGL.GL_CCW)
 
 
-
+start = os.time()
 time = os.time()
 val = 0.5
 while true do
-	LuaGL.test("ok")
 	if os.time() - time < 1 then
 		clear(0.0, 0.0, 0.0, 1.0)
+		LuaGL.glPushMatrix()
 		LuaGL.glBegin(LuaGL.GL_TRIANGLES)
 		LuaGL.glColor3f(1.0, 0.0, 0.0)
 		LuaGL.glVertex3f(0.0, val, 0.0)
@@ -30,7 +30,9 @@ while true do
 		LuaGL.glVertex3f(0.0, 0.0, val)
 		LuaGL.glEnd()
 		rotate(0.1, 0.0, 0.0)
-		LuaGL.Sync()
+		LuaGL.glPopMatrix()
+		LuaGL.glDrawString(0, 0, ""..(os.time()-start), 2.0)
+		LuaGL.glSync()
 		time = os.time()
 		val = val * 1.001
 	end

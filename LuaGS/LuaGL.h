@@ -9,7 +9,9 @@
 						  lua_settable(L, -3);
 
 
-#define loadMethod(var) rttr::registration::method(#var, &##var);
+#define loadMethod(L, var) LuaBinding::registerTableMethod(L, rttr::type::get_global_method(#var));
+
+#define initMethod(var) rttr::registration::method(#var, &##var);
 
 class LuaGL {
 public:

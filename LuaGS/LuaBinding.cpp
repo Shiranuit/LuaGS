@@ -31,13 +31,17 @@ const char *cstrcopy(const char *str)
 int GlobalCallLua(lua_State *L)
 {
 	rttr::method *m = (rttr::method *)lua_touserdata(L, lua_upvalueindex(1)); // Retrieve UserData
+	if (m == NULL) {
+		luaL_error(L, "Error calling the function");
+		return 0;
+	}
 	rttr::method method(*m); // Avoid Lua Garbage Collector
-	rttr::array_range<rttr::parameter_info> methodParams = method.get_parameter_infos();
+	auto& methodParams = method.get_parameter_infos();
 	int luaArgCount = lua_gettop(L);
 	int paramCount = methodParams.size();
 
 	if (paramCount > luaArgCount) {
-		luaL_error(L, "Expected %d arguments, got %d\n", methodParams.size(), luaArgCount);
+		luaL_error(L, "[%s] Expected %d arguments, got %d\n", method.get_name().to_string().c_str(), methodParams.size(), luaArgCount);
 		return 0;
 	}
 	if (paramCount == 0)
