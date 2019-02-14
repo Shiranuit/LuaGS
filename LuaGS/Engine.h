@@ -2,6 +2,7 @@
 #include "Display.h"
 #include "LuaContext.h"
 #include "FontRenderer.h"
+#include "Terminal.h"
 
 extern Display *display;
 extern FontRenderer *fontRenderer;

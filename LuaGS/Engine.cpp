@@ -20,7 +20,8 @@ void Engine::init(int ac, char **av)
 	display->clear(0.f, 0.f, 0.f, 1.f);
 	display->sync();
 
-	LuaGL::LoadLuaGL(lua.getState());	
+	LuaGL::LoadLuaGL(lua.getState());
+	Terminal::initTerminal(lua.getState());
 
 	int state = lua.doFile("startup.lua");
 	if (state != LUA_OK) {

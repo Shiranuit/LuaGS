@@ -61,12 +61,21 @@ int GlobalCallLua(lua_State *L)
 
 	auto paramIterator = methodParams.begin();
 
-	for (int i = 0; i < luaArgCount; i++) {
+	for (int i = 0; i < luaArgCount; i++, paramIterator++) {
 		int id = i + 1;
 		const rttr::type param = paramIterator->get_type();
 		if (LuaBinding::luaValueToC(L, id, param, methodArgs, LuaValue) < 1)
 			return 0;
 	}
+
+	/*for (int i = 0; i < luaArgCount; i++) {
+		printf("%s\n", methodArgs[i].get_type().get_name().to_string().c_str());
+		if (methodArgs[i].get_type() == rttr::type::get<LuaString>()) {
+			printf("=====\n");
+			printf("%s\n", (char const *)methodArgs[i].get_value<LuaString>());
+			printf("=====\n");
+		}
+	}*/
 
 	rttr::variant result = method.invoke_variadic({}, methodArgs);
 
@@ -218,9 +227,9 @@ int LuaBinding::luaValueToC(lua_State *L, int id, const rttr::type &param, std::
 			args[i] = (char *)value;
 		}
 		else if (param == rttr::type::get<const char *>()) {
-			const char *value = cstrcopy(lua_tostring(L, id));
+			char const *value = strcopy(lua_tostring(L, id));
 			LuaValue[i] = 0;
-			args[i] = value;
+			args[i] = (char const *)value;
 		}
 		else if (param == rttr::type::get<std::string>()) {
 			std::string *value = new std::string(lua_tostring(L, id));

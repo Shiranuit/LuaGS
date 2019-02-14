@@ -13,7 +13,7 @@ void pullEvent()
 	display->event();
 }
 
-void glDrawString(int x, int y, char *str, float size)
+void glDrawString(int x, int y, char const *str, float size)
 {
 	fontRenderer->drawString(x, y, str, size);
 }
@@ -45,9 +45,6 @@ void LuaGL::LoadLuaGL(lua_State *L)
 
 RTTR_REGISTRATION
 {
-	initMethod(glSync)
-	initMethod(glDrawString)
-
 	initMethod(glAccum)
 	initMethod(glAlphaFunc)
 	initMethod(glArrayElement)

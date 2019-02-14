@@ -19,11 +19,44 @@
     <Filter Include="Fichiers d%27en-tête\Lua">
       <UniqueIdentifier>{578b3d64-a123-4b8d-9fd6-8b1f9d4a65a7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Fichiers sources\Helpers">
+      <UniqueIdentifier>{35f70d75-9d62-4a7a-8594-40e55b749814}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\Helpers">
+      <UniqueIdentifier>{b53593de-0dfd-4f6a-af94-b3a2991a85a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Textures">
+      <UniqueIdentifier>{d03ec490-4cc9-42e3-ae8b-7237d7be3a6e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\Textures">
+      <UniqueIdentifier>{ce525f11-0719-43e3-ac0a-b233cfd4d693}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\Threads">
+      <UniqueIdentifier>{05e757c1-d013-4a21-99ef-0a4cec22cb81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Threads">
+      <UniqueIdentifier>{ef5ec83d-911a-408a-9ab3-2a63809d7eed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\LuaAPIs">
+      <UniqueIdentifier>{14c3bce3-e234-4581-babe-1ba01342e625}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\LuaAPIs">
+      <UniqueIdentifier>{615fbdd8-8306-4f73-85f4-69ae3bd3bc77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Fonts">
+      <UniqueIdentifier>{7fe475e1-9114-46f6-8aaf-b237ddbef3e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\Fonts">
+      <UniqueIdentifier>{4a9b81b9-fd24-418b-a709-051a11c230fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Engine">
+      <UniqueIdentifier>{26e3eeb3-9786-498b-b059-9dbd028be7da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\Engine">
+      <UniqueIdentifier>{82afddc6-6682-48e6-817b-510fe6dcd99c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Display.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="Lua\lua.h">
       <Filter>Fichiers d%27en-tête\Lua</Filter>
     </ClInclude>
@@ -105,30 +138,42 @@
     <ClInclude Include="LuaContext.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="Engine.h">
-      <Filter>Fichiers d%27en-tête</Filter>
+    <ClInclude Include="LuaGL.h">
+      <Filter>Fichiers d%27en-tête\LuaAPIs</Filter>
+    </ClInclude>
+    <ClInclude Include="MathHelper.h">
+      <Filter>Fichiers d%27en-tête\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaValueHelper.h">
+      <Filter>Fichiers d%27en-tête\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Terminal.h">
+      <Filter>Fichiers d%27en-tête\LuaAPIs</Filter>
     </ClInclude>
     <ClInclude Include="LuaBinding.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="LuaGL.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="stb_image.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureLoader.h">
-      <Filter>Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête\Helpers</Filter>
     </ClInclude>
     <ClInclude Include="FontRenderer.h">
-      <Filter>Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête\Fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>Fichiers d%27en-tête\Textures</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureLoader.h">
+      <Filter>Fichiers d%27en-tête\Textures</Filter>
+    </ClInclude>
+    <ClInclude Include="SharedQueue.h">
+      <Filter>Fichiers d%27en-tête\Threads</Filter>
+    </ClInclude>
+    <ClInclude Include="Display.h">
+      <Filter>Fichiers d%27en-tête\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine.h">
+      <Filter>Fichiers d%27en-tête\Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LuaGS.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Display.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Lua\ltable.c">
@@ -236,23 +281,35 @@
     <ClCompile Include="LuaContext.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="Engine.cpp">
-      <Filter>Fichiers sources</Filter>
+    <ClCompile Include="FontRenderer.cpp">
+      <Filter>Fichiers sources\Fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="LuaValueHelper.cpp">
+      <Filter>Fichiers sources\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="LuaBinding.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="LuaGL.cpp">
-      <Filter>Fichiers sources</Filter>
+      <Filter>Fichiers sources\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="stb_image.cpp">
-      <Filter>Fichiers sources</Filter>
+      <Filter>Fichiers sources\Textures</Filter>
     </ClCompile>
     <ClCompile Include="TextureLoader.cpp">
-      <Filter>Fichiers sources</Filter>
+      <Filter>Fichiers sources\Textures</Filter>
     </ClCompile>
-    <ClCompile Include="FontRenderer.cpp">
-      <Filter>Fichiers sources</Filter>
+    <ClCompile Include="Terminal.cpp">
+      <Filter>Fichiers sources\LuaAPIs</Filter>
+    </ClCompile>
+    <ClCompile Include="LuaGL.cpp">
+      <Filter>Fichiers sources\LuaAPIs</Filter>
+    </ClCompile>
+    <ClCompile Include="SharedQueue.cpp">
+      <Filter>Fichiers sources\Threads</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine.cpp">
+      <Filter>Fichiers sources\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Display.cpp">
+      <Filter>Fichiers sources\Engine</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

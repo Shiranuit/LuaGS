@@ -1,3 +1,4 @@
+
 function main()
 	function clear(r, g, b, a)
 		LuaGL.glClearColor(r, g, b, a)
@@ -27,12 +28,16 @@ function main()
 			LuaGL.glEnd()
 			rotate(0.1, 0.0, 0.0)
 			LuaGL.glPopMatrix()
-			LuaGL.glDrawString(0, 0, ""..(os.time()-start), 2.0)
-			LuaGL.glSync()
+			term.setTextColor(255,0,0)
+			term.write(os.time()-start)
+			term.refresh()
 			time = os.time()
 			val = val * 1.001
 		end
 	end
 end
 
+
 main()
+--term.write("Salut")
+--term.refresh()

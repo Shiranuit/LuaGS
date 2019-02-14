@@ -165,6 +165,7 @@
     <ClInclude Include="LuaBinding.h" />
     <ClInclude Include="LuaContext.h" />
     <ClInclude Include="LuaGL.h" />
+    <ClInclude Include="LuaValueHelper.h" />
     <ClInclude Include="Lua\lapi.h" />
     <ClInclude Include="Lua\lauxlib.h" />
     <ClInclude Include="Lua\lcode.h" />
@@ -191,7 +192,10 @@
     <ClInclude Include="Lua\lundump.h" />
     <ClInclude Include="Lua\lvm.h" />
     <ClInclude Include="Lua\lzio.h" />
+    <ClInclude Include="MathHelper.h" />
+    <ClInclude Include="SharedQueue.h" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="Terminal.h" />
     <ClInclude Include="TextureLoader.h" />
   </ItemGroup>
   <ItemGroup>
@@ -202,6 +206,7 @@
     <ClCompile Include="LuaContext.cpp" />
     <ClCompile Include="LuaGL.cpp" />
     <ClCompile Include="LuaGS.cpp" />
+    <ClCompile Include="LuaValueHelper.cpp" />
     <ClCompile Include="Lua\lapi.c" />
     <ClCompile Include="Lua\lauxlib.c" />
     <ClCompile Include="Lua\lbaselib.c" />
@@ -236,7 +241,9 @@
     <ClCompile Include="Lua\lutf8lib.c" />
     <ClCompile Include="Lua\lvm.c" />
     <ClCompile Include="Lua\lzio.c" />
+    <ClCompile Include="SharedQueue.cpp" />
     <ClCompile Include="stb_image.cpp" />
+    <ClCompile Include="Terminal.cpp" />
     <ClCompile Include="TextureLoader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
