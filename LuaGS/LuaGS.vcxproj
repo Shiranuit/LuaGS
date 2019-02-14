@@ -161,6 +161,7 @@
   <ItemGroup>
     <ClInclude Include="Display.h" />
     <ClInclude Include="Engine.h" />
+    <ClInclude Include="EngineVariables.h" />
     <ClInclude Include="FontRenderer.h" />
     <ClInclude Include="LuaBinding.h" />
     <ClInclude Include="LuaContext.h" />
@@ -193,6 +194,7 @@
     <ClInclude Include="Lua\lvm.h" />
     <ClInclude Include="Lua\lzio.h" />
     <ClInclude Include="MathHelper.h" />
+    <ClInclude Include="OS.h" />
     <ClInclude Include="SharedQueue.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Terminal.h" />
@@ -201,6 +203,7 @@
   <ItemGroup>
     <ClCompile Include="Display.cpp" />
     <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="EngineVariables.cpp" />
     <ClCompile Include="FontRenderer.cpp" />
     <ClCompile Include="LuaBinding.cpp" />
     <ClCompile Include="LuaContext.cpp" />
@@ -241,6 +244,7 @@
     <ClCompile Include="Lua\lutf8lib.c" />
     <ClCompile Include="Lua\lvm.c" />
     <ClCompile Include="Lua\lzio.c" />
+    <ClCompile Include="OS.cpp" />
     <ClCompile Include="SharedQueue.cpp" />
     <ClCompile Include="stb_image.cpp" />
     <ClCompile Include="Terminal.cpp" />

@@ -2,56 +2,40 @@
 #include "LuaBinding.h"
 #include "LuaGL.h"
 
-Engine::Engine(unsigned int _width, unsigned int _height, const std::string &title) : width(_width), height(_height)
+
+void Engine::Setup(unsigned int _width, unsigned int _height, const std::string &title)
 {
-	display = new Display(_width, _height, title);
-	fontRenderer = new FontRenderer("assets/term_font.png", _width, _height);
+	EngineVariables::display = new Display(_width, _height, title);
+	EngineVariables::fontRenderer = new FontRenderer("assets/term_font.png", _width, _height);
 }
 
 
-Engine::~Engine()
+void Engine::destroy()
 {
-	delete display;
-	delete fontRenderer;
+	delete EngineVariables::display;
+	delete EngineVariables::fontRenderer;
 }
 
 void Engine::init(int ac, char **av)
 {
-	display->clear(0.f, 0.f, 0.f, 1.f);
-	display->sync();
+	EngineVariables::display->clear(0.f, 0.f, 0.f, 1.f);
+	EngineVariables::display->sync();
 
-	LuaGL::LoadLuaGL(lua.getState());
-	Terminal::initTerminal(lua.getState());
+	LuaGL::LoadLuaGL(EngineVariables::lua.getState());
+	Terminal::init(EngineVariables::lua.getState());
+	OS::init(EngineVariables::lua.getState());
 
-	int state = lua.doFile("startup.lua");
+	int state = EngineVariables::lua.doFile("startup.lua");
 	if (state != LUA_OK) {
-		printf("Error = %s\n", lua_tostring(lua.getState(), -1));
+		printf("Error = %s\n", lua_tostring(EngineVariables::lua.getState(), -1));
 		exit(84);
 	}
 }
 
-void Engine::processEvent()
-{
-	SDL_Event event;
-	while (SDL_PollEvent(&event)) {
-		if (event.type == SDL_QUIT) {
-
-		}
-	}
-}
-
-void Engine::draw()
-{
-	
-}
-
-
 void Engine::run(int ac, char **av)
 {
 	init(ac, av);
-	while (!display->isClosed()) {
-		processEvent();
-		
+	while (!EngineVariables::display->isClosed()) {
+		EngineVariables::display->event();
 	}
-	
 }

@@ -30,6 +30,8 @@ const char *cstrcopy(const char *str)
 
 int GlobalCallLua(lua_State *L)
 {
+	if (L == NULL)
+		return 0;
 	rttr::method *m = (rttr::method *)lua_touserdata(L, lua_upvalueindex(1)); // Retrieve UserData
 	if (m == NULL) {
 		luaL_error(L, "Error calling the function");

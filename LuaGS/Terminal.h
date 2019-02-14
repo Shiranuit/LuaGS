@@ -1,12 +1,12 @@
 #pragma once
-#include "Engine.h"
+#include "EngineVariables.h"
 #include "LuaValueHelper.h"
 #include "MathHelper.h"
 
 class Terminal
 {
 public:
-	static void initTerminal(lua_State *L);
+	static void init(lua_State *L);
 
 	static int write(lua_State *L);
 	static int setCursorPos(lua_State *L);
@@ -16,6 +16,7 @@ public:
 	static int getTextColor(lua_State *L);
 	static int setTextScale(lua_State *L);
 	static int getTextScale(lua_State *L);
+	static int getSize(lua_State *L);
 
 
 	static int xPos;

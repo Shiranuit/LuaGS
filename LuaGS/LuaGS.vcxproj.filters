@@ -171,6 +171,12 @@
     <ClInclude Include="Engine.h">
       <Filter>Fichiers d%27en-tête\Engine</Filter>
     </ClInclude>
+    <ClInclude Include="EngineVariables.h">
+      <Filter>Fichiers d%27en-tête\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="OS.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LuaGS.cpp">
@@ -310,6 +316,12 @@
     </ClCompile>
     <ClCompile Include="Display.cpp">
       <Filter>Fichiers sources\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineVariables.cpp">
+      <Filter>Fichiers sources\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="OS.cpp">
+      <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

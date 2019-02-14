@@ -1,26 +1,18 @@
 #pragma once
-#include "Display.h"
-#include "LuaContext.h"
-#include "FontRenderer.h"
+#include "EngineVariables.h"
 #include "Terminal.h"
+#include "OS.h"
 
-extern Display *display;
-extern FontRenderer *fontRenderer;
+#include <mutex>
+#include <thread>
 
 class Engine
 {
 public:
-	Engine(unsigned int width, unsigned int height, const std::string &title);
-	virtual ~Engine();
-	void run(int ac, char **av);
-	void init(int ac, char **av);
-	void draw();
-	void processEvent();
-	
+	static void Setup(unsigned int width, unsigned int height, const std::string &title);
+	static void destroy();
+	static void run(int ac, char **av);
+	static void init(int ac, char **av);
 
-private:
-	LuaContext lua;
-	unsigned int width;
-	unsigned int height;
 };
 

@@ -3,7 +3,8 @@
 
 int main(int ac, char **av)
 {
-	Engine engine(800, 600, "LuaGS");
-	engine.run(ac, av);
+	Engine::Setup(800, 600, "LuaGS");
+	Engine::run(ac, av);
+	Engine::destroy();
 	return 0;
 }
