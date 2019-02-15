@@ -14,5 +14,6 @@ public:
 
 	static int timeNano(lua_State *L);
 	static int pullEvent(lua_State *L);
+	static int pathExec(lua_State *L);
 };
 
