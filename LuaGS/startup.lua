@@ -7,6 +7,7 @@ local nativeSetCursorPos = term.setCursorPos
 local nativeGetCursorPos = term.getCursorPos
 local nativeSetTextScale = term.setTextScale
 local nativeGetSize = term.getSize
+_G.natives = {term={getSize = nativeGetSize, setTextScale=nativeSetTextScale, setCursorPos=nativeSetCursorPos, getCursorPos=nativeGetCursorPos, write=nativeWrite}, os={pullEvent=nativePullEvent},read=nativeRead, print=nativePrint}
 local cursorX = 1
 local cursorY = 1
 
@@ -24,12 +25,12 @@ function _G.out(str)
 	end
 end
 
-function term.getSize()
+function _G.term.getSize()
 	local scale = term.getTextScale()
 	return math.floor(w / (6 * scale)), math.floor(h / (9 * scale))
 end
 
-function term.resize()
+function _G.term.resize()
 	wsize = w / (6 * term.getTextScale())
 	for i=1, h / (9 * term.getTextScale()) do
 		screen[i] = screen[i]:sub(1, wsize)
@@ -37,7 +38,7 @@ function term.resize()
 	end	
 end
 
-function term.setTextScale(scale)
+function _G.term.setTextScale(scale)
 	if type(scale) == "number" then
 		nativeSetTextScale(scale)
 		term.resize()
@@ -167,7 +168,7 @@ function _G.write(txt)
 	term.refresh()
 end
 
-term.write = write
+_G.term.write = write
 
 function _G.print(txt)
 	txt = tostring(txt)
@@ -175,11 +176,11 @@ function _G.print(txt)
 		for line in txt:gmatch("[^\n]+") do
 			term.write(line)
 			local x, y = term.getCursorPos()
-			term.setCursorPos(0, y + 9)
+			term.setCursorPos(1, y + 1)
 		end
 	else
 		local x, y = term.getCursorPos()
-		term.setCursorPos(0, y + 9)
+		term.setCursorPos(1, y + 1)
 	end
 	term.refresh()
 end
@@ -187,6 +188,9 @@ end
 function _G.os.pullEvent(filter)
 	if (filter) then
 		local event = nativePullEvent()
+		if (filter == "skip_event") then
+			return nil
+		end
 		while (not event or (event and event[1] ~= filter)) do
 			event = nativePullEvent()
 		end
@@ -271,5 +275,21 @@ end
 
 while true do
 	local input = read("> ")
-	out(input)
+	if #input > 0 then
+		local code = ""
+		local h = io.open(input) or io.open(input..".lua")
+		if (h) then
+			for line in h:lines() do
+				code = code..line.."\n"
+			end
+			io.close(h)
+			local func = load(code, input, "t", _G)
+			local success, output = pcall(func)
+			if (not success) then
+				print("Error: "..tostring(msg))
+			end
+		else
+			print("File not found '"..input.."'")
+		end
+	end
 end

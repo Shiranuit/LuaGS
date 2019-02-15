@@ -70,15 +70,6 @@ int GlobalCallLua(lua_State *L)
 			return 0;
 	}
 
-	/*for (int i = 0; i < luaArgCount; i++) {
-		printf("%s\n", methodArgs[i].get_type().get_name().to_string().c_str());
-		if (methodArgs[i].get_type() == rttr::type::get<LuaString>()) {
-			printf("=====\n");
-			printf("%s\n", (char const *)methodArgs[i].get_value<LuaString>());
-			printf("=====\n");
-		}
-	}*/
-
 	rttr::variant result = method.invoke_variadic({}, methodArgs);
 
 

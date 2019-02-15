@@ -52,7 +52,7 @@ void FontRenderer::drawChar(int x, int y, unsigned char c, float size)
 	int xStart = 1 + i * (fontWidth + 2);
 	int yStart = 1 + j * (fontHeight + 2);
 	glBegin(GL_QUADS);
-
+	glPushMatrix();
 	glTexCoord2f(xStart, yStart);
 	glVertex3f(getX(x * size), getY(y * size), 0.f);
 
@@ -64,6 +64,6 @@ void FontRenderer::drawChar(int x, int y, unsigned char c, float size)
 
 	glTexCoord2f(xStart, (yStart + fontHeight));
 	glVertex3f(getX(x * size), getY((y + fontHeight) * size), 0.f);
-	
+	glPopMatrix();
 	glEnd();
 }
