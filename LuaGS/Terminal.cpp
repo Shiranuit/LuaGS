@@ -7,6 +7,10 @@ int Terminal::r = 255;
 int Terminal::g = 255;
 int Terminal::b = 255;
 
+int Terminal::br = 0;
+int Terminal::bg = 0;
+int Terminal::bb = 0;
+
 float Terminal::textScale = 3.f;
 
 void Terminal::init(lua_State *L)
@@ -23,10 +27,12 @@ void Terminal::init(lua_State *L)
 	LuaValueHelper::pushCFuncToTable(L, "refresh", Terminal::refresh);
 	LuaValueHelper::pushCFuncToTable(L, "getSize", Terminal::getSize);
 	LuaValueHelper::pushCFuncToTable(L, "getCursorPos", Terminal::getCursorPos);
+	LuaValueHelper::pushCFuncToTable(L, "getBackgroundColor", Terminal::getBackgroundColor);
+	LuaValueHelper::pushCFuncToTable(L, "setBackgroundColor", Terminal::setBackgroundColor);
 	LuaValueHelper::pushCFuncToTable(L, "getTextColor", Terminal::getTextColor);
+	LuaValueHelper::pushCFuncToTable(L, "setTextColor", Terminal::setTextColor);
 	LuaValueHelper::pushCFuncToTable(L, "getTextScale", Terminal::getTextScale);
 	LuaValueHelper::pushCFuncToTable(L, "setCursorPos", Terminal::setCursorPos);
-	LuaValueHelper::pushCFuncToTable(L, "setTextColor", Terminal::setTextColor);
 	LuaValueHelper::pushCFuncToTable(L, "setTextScale", Terminal::setTextScale);
 	LuaValueHelper::pushCFuncToTable(L, "write", Terminal::write);
 }
@@ -56,6 +62,17 @@ int Terminal::getTextColor(lua_State *L)
 	lua_pushinteger(L, Terminal::r);
 	lua_pushinteger(L, Terminal::g);
 	lua_pushinteger(L, Terminal::b);
+	return 3;
+}
+
+
+int Terminal::getBackgroundColor(lua_State *L)
+{
+	if (L == nullptr)
+		return 0;
+	lua_pushinteger(L, Terminal::br);
+	lua_pushinteger(L, Terminal::bg);
+	lua_pushinteger(L, Terminal::bb);
 	return 3;
 }
 
@@ -96,8 +113,32 @@ int Terminal::setTextColor(lua_State *L)
 		r = MathHelper::clamp<int>(r, 0, 255);
 		g = MathHelper::clamp<int>(g, 0, 255);
 		b = MathHelper::clamp<int>(b, 0, 255);
+		EngineVariables::fontRenderer->setTextColor(r, g, b);
 		lua_pushboolean(L, 1);
 	} else {
+		lua_pushboolean(L, 0);
+		luaL_error(L, "Expected 3 arguments, got %d\n", ac);
+	}
+	return 1;
+}
+
+int Terminal::setBackgroundColor(lua_State *L)
+{
+	if (L == nullptr)
+		return 0;
+	int ac = lua_gettop(L);
+	if (ac >= 3) {
+		br = LuaValueHelper::optInt(L, 1, br);
+		bg = LuaValueHelper::optInt(L, 2, bg);
+		bb = LuaValueHelper::optInt(L, 3, bb);
+
+		br = MathHelper::clamp<int>(br, 0, 255);
+		bg = MathHelper::clamp<int>(bg, 0, 255);
+		bb = MathHelper::clamp<int>(bb, 0, 255);
+		EngineVariables::fontRenderer->setBackgroundColor(br, bg, bb);
+		lua_pushboolean(L, 1);
+	}
+	else {
 		lua_pushboolean(L, 0);
 		luaL_error(L, "Expected 3 arguments, got %d\n", ac);
 	}

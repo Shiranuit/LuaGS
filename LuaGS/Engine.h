@@ -2,6 +2,7 @@
 #include "EngineVariables.h"
 #include "Terminal.h"
 #include "OS.h"
+#include "FileSystem.h"
 
 #include <mutex>
 #include <thread>

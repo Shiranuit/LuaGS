@@ -12,6 +12,8 @@ public:
 	virtual ~FontRenderer();
 	void drawString(int x, int y, const std::string &str, float size);
 	void drawString(int x, int y, const char *str, float size);
+	void setTextColor(int r, int g, int b);
+	void setBackgroundColor(int r, int g, int b);
 
 private:
 	void drawChar(int x, int y, unsigned char c, float size);
@@ -21,5 +23,13 @@ private:
 	GLuint font;
 	unsigned int w;
 	unsigned int h;
+
+	unsigned int fr;
+	unsigned int fg;
+	unsigned int fb;
+
+	unsigned int br;
+	unsigned int bg;
+	unsigned int bb;
 };
 

@@ -1,210 +1,108 @@
 local nativePrint = print
-local nativeWrite = term.write
 local nativeRead = read
-local nativePullEvent = os.pullEvent
 local nativeStringChar = string.char
-local nativeSetCursorPos = term.setCursorPos
-local nativeGetCursorPos = term.getCursorPos
-local nativeSetTextScale = term.setTextScale
-local nativeGetSize = term.getSize
-_G.natives = {term={getSize = nativeGetSize, setTextScale=nativeSetTextScale, setCursorPos=nativeSetCursorPos, getCursorPos=nativeGetCursorPos, write=nativeWrite}, os={pullEvent=nativePullEvent},read=nativeRead, print=nativePrint}
-local cursorX = 1
-local cursorY = 1
 
-local screen = {}
-local w, h = nativeGetSize()
-local wsize = w / (6 * term.getTextScale())
-for i=1, h / (9 * term.getTextScale()) do
-	screen[i] = string.rep(" ",  math.floor(wsize))
-end
+_G.natives = {read=nativeRead, print=nativePrint, write=nativeWrite, string={char=nativeStringChar}}
 
-function _G.out(str)
+dofile("./rom/core-apis/keys.lua")
+dofile("./rom/core-apis/colors.lua")
+dofile("./rom/core-apis/os.lua")
+dofile("./rom/core-apis/term.lua")
+dofile("./rom/core-apis/fs.lua")
+
+os.loadAPI("./rom/apis/textutils.lua")
+os.loadAPI("./rom/apis/paintutils.lua")
+os.loadAPI("./rom/apis/parallel.lua")
+os.loadAPI("./rom/apis/vector.lua")
+os.loadAPI("./rom/apis/window.lua")
+
+function out(str)
 	str = tostring(str)
 	if (str and #str > 0) then
 		nativePrint(str)
 	end
 end
 
-function _G.term.getSize()
-	local scale = term.getTextScale()
-	return math.floor(w / (6 * scale)), math.floor(h / (9 * scale))
+function write( sText )
+    local w,h = term.getSize()        
+    local x,y = term.getCursorPos()
+    
+    local nLinesPrinted = 0
+    local function newLine()
+        if y + 1 <= h then
+            term.setCursorPos(1, y + 1)
+        else
+            term.setCursorPos(1, h)
+            term.scroll(1)
+        end
+        x, y = term.getCursorPos()
+        nLinesPrinted = nLinesPrinted + 1
+    end
+    
+    
+    while string.len(sText) > 0 do
+        local whitespace = string.match( sText, "^[ \t]+" )
+        if whitespace then
+            
+            term.write( whitespace, true )
+            x,y = term.getCursorPos()
+            sText = string.sub( sText, string.len(whitespace) + 1 )
+        end
+        
+        local newline = string.match( sText, "^\n" )
+        if newline then
+            
+            newLine()
+            sText = string.sub( sText, 2 )
+        end
+        
+        local text = string.match( sText, "^[^ \t\n]+" )
+        if text then
+            sText = string.sub( sText, string.len(text) + 1 )
+            if string.len(text) > w then
+                
+                while string.len( text ) > 0 do
+                    if x > w then
+                        newLine()
+                    end
+                    term.write( text, true )
+                    text = string.sub( text, (w-x) + 2 )
+                    x,y = term.getCursorPos()
+                end
+            else
+                
+                if x + string.len(text) - 1 > w then
+                    newLine()
+                end
+                term.write( text, true )
+                x,y = term.getCursorPos()
+            end
+        end
+    end
+    term.redraw()
+    return nLinesPrinted
 end
 
-function _G.term.resize()
-	wsize = w / (6 * term.getTextScale())
-	for i=1, h / (9 * term.getTextScale()) do
-		screen[i] = screen[i]:sub(1, wsize)
-		screen[i] = screen[i]..string.rep(" ", wsize-#screen[i])
-	end	
+function print( ... )
+    local nLinesPrinted = 0
+    for n,v in ipairs( { ... } ) do
+        nLinesPrinted = nLinesPrinted + write( tostring( v ) )
+    end
+    nLinesPrinted = nLinesPrinted + write( "\n" )
+    return nLinesPrinted
 end
 
-function _G.term.setTextScale(scale)
-	if type(scale) == "number" then
-		nativeSetTextScale(scale)
-		term.resize()
-	end
+function printError( ... )
+    if term.isColour() then
+        term.setTextColour( colors.red )
+    end
+    print( ... )
+    if term.isColour() then
+        term.setTextColour( colors.white )
+    end
 end
 
-function _G.term.setCursorPos(x, y)
-	if (type(x) == "number" and type(y) == "number") then
-		cursorX = math.floor(x)
-		cursorY = math.floor(y)
-	end
-end
-
-
-function _G.term.getCursorPos()
-	return cursorX, cursorY
-end
-
-
-Keys = {
-	["ENTER"] = 40,
-	["BACKSPACE"] = 42,
-	["SUPPR"] = 76,
-	["UP"] = 82,
-	["RIGHT"] = 79,
-	["DOWN"] = 81,
-	["LEFT"] = 80,
-	["NUM0"] = 98,
-	["NUM1"] = 89,
-	["NUM2"] = 90,
-	["NUM3"] = 91,
-	["NUM4"] = 92,
-	["NUM5"] = 93,
-	["NUM6"] = 94,
-	["NUM7"] = 95,
-	["NUM8"] = 96,
-	["NUM9"] = 97,
-	["PLUS"] = 87,
-	["MINUS"] = 86,
-	["MUL"] = 85,
-	["DIV"] = 84,
-	["NUMENTER"] = 88,
-	["NUMDOT"] = 89,
-	["VERNUM"] = 83,
-	["INSERT"] = 73,
-	["HOME"] = 74,
-	["PAGEUP"] = 75,
-	["END"] = 77,
-	["PAGEDOWN"] = 78,
-	["F1"] = 58,
-	["F2"] = 59,
-	["F3"] = 60,
-	["F4"] = 61,
-	["F5"] = 62,
-	["F6"] = 63,
-	["F7"] = 64,
-	["F8"] = 65,
-	["F9"] = 66,
-	["F10"] = 67,
-	["F11"] = 68,
-	["F12"] = 69,
-	["ESCAPE"] = 41,
-	["LCTRL"] = 224,
-	["SHIFT"] = 225,
-	["ALT"] = 226,
-	["WIN"] = 227,
-	["VERMAJ"] = 57,
-	["SPACE"] = 44,
-	["ALTGR"] = 230,
-	["RSHIFT"] = 229,
-	["FILE"] = 101,
-	["RCTRL"] = 228,
-	["PRINTSCR"] = 70,
-	["BREAK"] = 71,
-	["PAUSE"] = 72,
-	["TAB"] = 43,	
-}
-
-local function clear()
-	LuaGL.glClearColor(0.0, 0.0, 0.0, 1.0)
-	LuaGL.glClear(LuaGL.GL_COLOR_BUFFER_BIT)
-end
-
-function term.scroll(dir)
-	if (type(dir) == "number") then
-		if (dir < 0) then
-			for i=1, -dir do
-				table.remove(screen, 1)
-			end
-			local wsize = math.floor(w / (6 * term.getTextScale()))
-			for i=1, -dir do
-				screen[#screen + 1] = string.rep(" ", wsize)
-			end
-		elseif (dir > 0) then
-			for i=1, -dir do
-				screen[#screen] = nil
-			end
-			local wsize = math.floor(w / (6 * term.getTextScale()))
-			for i=1, -dir do
-				table.insert(screen, 1, string.rep(" ", wsize))
-			end
-		end
-	end
-end
-
-function _G.write(txt)
-	txt = tostring(txt)
-	if (txt and #txt > 0) then
-		local scale = term.getTextScale()
-		local w, h = nativeGetSize()
-		for i=1, #txt do
-			if cursorX > 0 and cursorX < w / (scale * 6)  and cursorY > 0 and cursorY < h / (scale * 9) then
-				screen[cursorY] = screen[cursorY]:sub(1, cursorX-1)..txt:sub(i,i)..screen[cursorY]:sub(cursorX+1, #screen[cursorY])
-				cursorX = cursorX + 1
-				if (cursorX > w / (scale * 6)) then
-					cursorX = 1
-					cursorY = cursorY + 1
-				end
-			end
-		end
-	end
-	clear()
-	for i=1, #screen do
-		nativeSetCursorPos(0, (i - 1) * 9)
-		nativeWrite(screen[i])
-	end
-	term.refresh()
-end
-
-_G.term.write = write
-
-function _G.print(txt)
-	txt = tostring(txt)
-	if txt and #txt > 0 then
-		for line in txt:gmatch("[^\n]+") do
-			term.write(line)
-			local x, y = term.getCursorPos()
-			term.setCursorPos(1, y + 1)
-		end
-	else
-		local x, y = term.getCursorPos()
-		term.setCursorPos(1, y + 1)
-	end
-	term.refresh()
-end
-
-function _G.os.pullEvent(filter)
-	if (filter) then
-		local event = nativePullEvent()
-		if (filter == "skip_event") then
-			return nil
-		end
-		while (not event or (event and event[1] ~= filter)) do
-			event = nativePullEvent()
-		end
-		return table.unpack(event)
-	else
-		local event = nativePullEvent()
-		while (not event) do
-			event = nativePullEvent()
-		end
-		return table.unpack(event)
-	end
-end
-
-function _G.string.char(...)
+function string.char(...)
 	local data = {...}
 	for k, v in pairs(data) do
 		if type(v) == "number" and v > -1 and v < 256 then
@@ -216,80 +114,270 @@ function _G.string.char(...)
 	return table.unpack(data)
 end
 
-function _G.term.clear()
-	for i=1, h / (9 * term.getTextScale()) do
-		screen[i] = string.rep(" ",  math.floor(wsize))
-	end
-	term.refresh()
+function read( _sReplaceChar, _tHistory, _fnComplete )
+    term.setCursorBlink( true )
+
+    local sLine = ""
+    local nHistoryPos
+    local nPos = 0
+    if _sReplaceChar then
+        _sReplaceChar = string.sub( _sReplaceChar, 1, 1 )
+    end
+
+    local tCompletions
+    local nCompletion
+    local function recomplete()
+        if _fnComplete and nPos == string.len(sLine) then
+            tCompletions = _fnComplete( sLine )
+            if tCompletions and #tCompletions > 0 then
+                nCompletion = 1
+            else
+                nCompletion = nil
+            end
+        else
+            tCompletions = nil
+            nCompletion = nil
+        end
+    end
+
+    local function uncomplete()
+        tCompletions = nil
+        nCompletion = nil
+    end
+
+    local w = term.getSize()
+    local sx = term.getCursorPos()
+
+    local function redraw( _bClear )
+        local nScroll = 0
+        if sx + nPos >= w then
+            nScroll = (sx + nPos) - w
+        end
+        local cx,cy = term.getCursorPos()
+        term.setCursorPos( sx, cy )
+        local sReplace = (_bClear and " ") or _sReplaceChar
+        if sReplace then
+            term.write( string.rep( sReplace, math.max( string.len(sLine) - nScroll, 0 ) ) )
+        else
+            term.write( string.sub( sLine, nScroll + 1 ) )
+        end
+
+        if nCompletion then
+            local sCompletion = tCompletions[ nCompletion ]
+            local oldText, oldBg
+            if not _bClear then
+                oldText = term.getTextColor()
+                oldBg = term.getBackgroundColor()
+                term.setTextColor( colors.white )
+                term.setBackgroundColor( colors.gray )
+            end
+            if sReplace then
+                term.write( string.rep( sReplace, string.len( sCompletion ) ) )
+            else
+                term.write( sCompletion )
+            end
+            if not _bClear then
+                term.setTextColor( oldText )
+                term.setBackgroundColor( oldBg )
+            end
+        end
+
+        term.setCursorPos( sx + nPos - nScroll, cy )
+    end
+    
+    local function clear()
+        redraw( true )
+    end
+    recomplete()
+    redraw()
+
+    local function acceptCompletion()
+        if nCompletion then
+            
+            clear()
+
+            
+            local sCompletion = tCompletions[ nCompletion ]
+            local sFirstLetter = string.sub( sCompletion, 1, 1 )
+            local sCommonPrefix = sCompletion
+            for n=1,#tCompletions do
+                local sResult = tCompletions[n]
+                if n ~= nCompletion and string.find( sResult, sFirstLetter, 1, true ) == 1 then
+                    while #sCommonPrefix > 1 do
+                        if string.find( sResult, sCommonPrefix, 1, true ) == 1 then
+                            break
+                        else
+                            sCommonPrefix = string.sub( sCommonPrefix, 1, #sCommonPrefix - 1 )
+                        end
+                    end
+                end
+            end
+
+            
+            sLine = sLine .. sCommonPrefix
+            nPos = string.len( sLine )
+        end
+
+        recomplete()
+        redraw()
+    end
+    while true do
+        local sEvent, param = os.pullEvent()
+        if sEvent == "char" then
+            
+            clear()
+            sLine = string.sub( sLine, 1, nPos ) .. param .. string.sub( sLine, nPos + 1 )
+            nPos = nPos + 1
+            recomplete()
+            redraw()
+
+        elseif sEvent == "paste" then
+            
+            clear()
+            sLine = string.sub( sLine, 1, nPos ) .. param .. string.sub( sLine, nPos + 1 )
+            nPos = nPos + string.len( param )
+            recomplete()
+            redraw()
+
+        elseif sEvent == "key" then
+            if param == keys.enter or param == keys.numenter then
+                
+                if nCompletion then
+                    clear()
+                    uncomplete()
+                    redraw()
+                end
+                break
+                
+            elseif param == keys.left then
+                
+                if nPos > 0 then
+                    clear()
+                    nPos = nPos - 1
+                    recomplete()
+                    redraw()
+                end
+                
+            elseif param == keys.right then
+                
+                if nPos < string.len(sLine) then
+                    
+                    clear()
+                    nPos = nPos + 1
+                    recomplete()
+                    redraw()
+                else
+                    
+                    acceptCompletion()
+                end
+
+            elseif param == keys.up or param == keys.down then
+                
+                if nCompletion then
+                    
+                    clear()
+                    if param == keys.up then
+                        nCompletion = nCompletion - 1
+                        if nCompletion < 1 then
+                            nCompletion = #tCompletions
+                        end
+                    elseif param == keys.down then
+                        nCompletion = nCompletion + 1
+                        if nCompletion > #tCompletions then
+                            nCompletion = 1
+                        end
+                    end
+                    redraw()
+
+                elseif _tHistory then
+                    
+                    clear()
+                    if param == keys.up then
+                        
+                        if nHistoryPos == nil then
+                            if #_tHistory > 0 then
+                                nHistoryPos = #_tHistory
+                            end
+                        elseif nHistoryPos > 1 then
+                            nHistoryPos = nHistoryPos - 1
+                        end
+                    else
+                        
+                        if nHistoryPos == #_tHistory then
+                            nHistoryPos = nil
+                        elseif nHistoryPos ~= nil then
+                            nHistoryPos = nHistoryPos + 1
+                        end                        
+                    end
+                    if nHistoryPos then
+                        sLine = _tHistory[nHistoryPos]
+                        nPos = string.len( sLine ) 
+                    else
+                        sLine = ""
+                        nPos = 0
+                    end
+                    uncomplete()
+                    redraw()
+
+                end
+
+            elseif param == keys.backspace then
+                
+                if nPos > 0 then
+                    clear()
+                    sLine = string.sub( sLine, 1, nPos - 1 ) .. string.sub( sLine, nPos + 1 )
+                    nPos = nPos - 1
+                    recomplete()
+                    redraw()
+                end
+
+            elseif param == keys.home then
+                
+                if nPos > 0 then
+                    clear()
+                    nPos = 0
+                    recomplete()
+                    redraw()
+                end
+
+            elseif param == keys.delete then
+                
+                if nPos < string.len(sLine) then
+                    clear()
+                    sLine = string.sub( sLine, 1, nPos ) .. string.sub( sLine, nPos + 2 )                
+                    recomplete()
+                    redraw()
+                end
+
+            elseif param == keys["end"] then
+                
+                if nPos < string.len(sLine ) then
+                    clear()
+                    nPos = string.len(sLine)
+                    recomplete()
+                    redraw()
+                end
+
+            elseif param == keys.tab then
+                
+                acceptCompletion()
+
+            end
+
+        elseif sEvent == "term_resize" then
+            
+            w = term.getSize()
+            redraw()
+
+        end
+    end
+
+    local cx, cy = term.getCursorPos()
+    term.setCursorBlink( false )
+    term.setCursorPos( w + 1, cy )
+    print()
+    
+    return sLine
 end
 
-function _G.term.clearLine()
-	local w, h = nativeGetSize()
-	if (cursorY > 0 and cursorY < h / (9 * term.getTextScale())) then
-		screen[cursorY] = string.rep(" ", math.floor(wsize))
-	end
-end
-
-function _G.read(str)
-	local enter = false
-	local txt = ""
-	local pos = 0
-	local startX, startY = term.getCursorPos()
-	if (str and #tostring(str) > 0) then
-		term.write(tostring(str))
-	end
-	
-	function update()
-		term.setCursorPos(startX, startY)
-		term.clearLine()
-		if (str and #tostring(str) > 0) then
-			term.write(tostring(str))
-		end
-		term.write(txt)
-	end
-	
-	while not enter do
-		local event, key, char = os.pullEvent("key")
-		if key == Keys.ENTER or key == Keys.NUMENTER then
-			local x, y = term.getCursorPos()
-			if (y + 1 > ({term.getSize()})[2]) then
-				term.scroll(-1)
-				term.setCursorPos(1, y)
-			else
-				term.setCursorPos(1, y + 1)
-			end
-			return txt
-		elseif key == Keys.BACKSPACE then
-			if #txt > 0 then
-				txt = txt:sub(0, pos - 1)..txt:sub(pos+1, #txt)
-				pos = pos - 1
-				update()
-			end
-		elseif char > -1 and char < 256 then
-			txt = txt .. string.char(char)
-			pos = pos + 1
-			update()
-		end
-	end
-end
-
-while true do
-	local input = read("> ")
-	if #input > 0 then
-		local code = ""
-		local h = io.open(input) or io.open(input..".lua")
-		if (h) then
-			for line in h:lines() do
-				code = code..line.."\n"
-			end
-			io.close(h)
-			local func = load(code, input, "t", _G)
-			local success, output = pcall(func)
-			if (not success) then
-				print("Error: "..tostring(msg))
-			end
-		else
-			print("File not found '"..input.."'")
-		end
-	end
-end
+os.run({}, fs.combine("", "/rom/programs/shell"))

@@ -175,7 +175,13 @@
       <Filter>Fichiers d%27en-tête\Engine</Filter>
     </ClInclude>
     <ClInclude Include="OS.h">
-      <Filter>Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête\LuaAPIs</Filter>
+    </ClInclude>
+    <ClInclude Include="FileSystem.h">
+      <Filter>Fichiers d%27en-tête\LuaAPIs</Filter>
+    </ClInclude>
+    <ClInclude Include="FSHelper.h">
+      <Filter>Fichiers d%27en-tête\Helpers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -321,7 +327,13 @@
       <Filter>Fichiers sources\Engine</Filter>
     </ClCompile>
     <ClCompile Include="OS.cpp">
-      <Filter>Fichiers sources</Filter>
+      <Filter>Fichiers sources\LuaAPIs</Filter>
+    </ClCompile>
+    <ClCompile Include="FileSystem.cpp">
+      <Filter>Fichiers sources\LuaAPIs</Filter>
+    </ClCompile>
+    <ClCompile Include="FSHelper.cpp">
+      <Filter>Fichiers sources\Helpers</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
